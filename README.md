@@ -28,7 +28,15 @@ The data and background methodology released to partners are available here:
 
 ## Interviews and quotes
 
-* 
+* Richard Burge, Chief Executive of London Chamber of Commerce and Industry
+* Labour’s London Assembly Economy Spokesperson, Leonie Cooper AM
+* Powys County Council
+* Richmondshire District Council
+* Minesh Patel, principal policy manager at Citizens Advice UK
+* Emma Congreve, Knowledge Exchange Fellow at the Fraser of Allander Institute at the University of Strathclyde
+* Peter Matejic, deputy director for evidence and impact at the Joseph Rowntree Foundation
+* Nye Cominetti, senior economist at the Resolution Foundation think-tank
+* The Department for Work and Pensions
 
 ## Partner usage
 
