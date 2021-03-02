@@ -34,3 +34,14 @@ The data and background methodology released to partners are available here:
 
 The Shared Data Unit makes data journalism available to the wider news industry as part of the BBC Local News Partnership.
 Stories written by partners based on this research included:
+
+* Teesside Live: [Teesside worst hit by covid-19 jobs crisis as huge numbers turn to Universal Credit](https://www.gazettelive.co.uk/news/teesside-news/teesside-worst-hit-covid-19-19942670) *2 March 2021*
+* Cambridgeshire Live: [Cambridgeshire revealed as one of areas worst hit by coronavirus jobs crisis](https://www.cambridge-news.co.uk/news/cambridge-news/cambridgeshire-covid-coronavirus-jobs-crisis-19943043) *2 March 2021*
+* In Your Area (Reach): [Revealed: The areas most affected by the Covid-19 jobs crisis](https://www.inyourarea.co.uk/news/areas-most-affected-by-covid-jobs-crisis/) *2 March 2021*
+* Shetland News: [New study sheds light on rise in benefits claims during pandemic](https://www.shetnews.co.uk/2021/03/02/new-study-sheds-light-on-rise-in-benefits-claims-during-pandemic/) *2 March 2021*
+
+The story featured on BBC front, home and England pages. It was also used by BBC Somerset, BBC Radio Shropshire and BBC Radio Tees.
+
+## Related repos
+
+You can [find all coronavirus-related stories by the BBC data units tagged 'coronavirus' here](https://github.com/search?q=topic%3Acoronavirus+org%3ABBC-Data-Unit&type=Repositories)
