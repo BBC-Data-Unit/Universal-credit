@@ -19,7 +19,7 @@ It was sourced from the DWP’s [Stat Explorer](https://stat-xplore.dwp.gov.uk/w
 * Starts on Universal Credit 
 * People on Universal Credit
 
-The programming language R was used to combine and reshape the data for analysis. [The proecss is documented in this R notebook](https://github.com/BBC-Data-Unit/Universal-credit/blob/main/welfarecap.Rmd)
+The programming language R was used to combine and reshape the data for analysis. [The process is documented in this R notebook](https://github.com/BBC-Data-Unit/Universal-credit/blob/main/welfarecap.Rmd)
 
 In order to establish the minimum numbers of people still on Universal Credit 6 months after their claims began we analysed increases in the numbers of claimants in the 6-12 month category between September and October (6 months after April and May).
 
