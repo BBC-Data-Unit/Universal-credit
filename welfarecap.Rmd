@@ -489,20 +489,7 @@ inworkPovertybyLA_jan19dec20 <- rio::import("inworkPovertybyLA_jan19dec20.xlsx",
 
 We want to calculate the percentages of the totals for each LA.
 
-
-## Amount of benefit cap - TBC
-
-This data is in the Benefit Cap section, in the UC Cumulative Caseload database. The [explanatory note](https://stat-xplore.dwp.gov.uk/webapi/metadata/BC_UC_Flows/Capped%20UC%20Households%20to%20Date.html) says:
-
-> "'Onflow Month' shows the first month in which a household had their Universal Credit capped. Households may flow on and off the cap numerous times as their circumstances change, but 'Onflow Month' will always show the month when a household had their Universal Credit capped for the first time."
-
-We are just interested in how much is being capped, and where. Forming a table is tricky but goes like this:
-
-* Clear the table
-* Select Measures > Amount of benefit capped (mean). Click Row to add that as a row.
-* Select Geography > National - Regional - LA - OAs > Local authority. Click Row to add that as another level of row.
-* Select Onflow month > Jan 2020 through to latest month. Click Column to add those as columns
-* Click Retrieve data in the main table to load the figures for the mean caps
+This is completed in Excel.
 
 ## Use the API - TBC
 
