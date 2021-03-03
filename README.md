@@ -47,6 +47,12 @@ Stories written by partners based on this research included:
 * Cambridgeshire Live: [Cambridgeshire revealed as one of areas worst hit by coronavirus jobs crisis](https://www.cambridge-news.co.uk/news/cambridge-news/cambridgeshire-covid-coronavirus-jobs-crisis-19943043) *2 March 2021*
 * In Your Area (Reach): [Revealed: The areas most affected by the Covid-19 jobs crisis](https://www.inyourarea.co.uk/news/areas-most-affected-by-covid-jobs-crisis/) *2 March 2021*
 * Shetland News: [New study sheds light on rise in benefits claims during pandemic](https://www.shetnews.co.uk/2021/03/02/new-study-sheds-light-on-rise-in-benefits-claims-during-pandemic/) *2 March 2021*
+* Lancashire Telegraph: [Universal Credit claims by people in work rise as Ribble Valley tourism hit](https://www.lancashiretelegraph.co.uk/news/19126798.in-work-uc-claims-tourism-industry-hit/) *2 March 2021*
+* Southampton Daily Echo: [Benefit claims soared across Southampton as virus hit the region](https://www.dailyecho.co.uk/news/19127655.benefit-claims-soared-across-southampton-virus-hit-region/) *2 March 2021*
+* Aberdeen Evening Express: [Number of north-east Universal Credit claimants still receiving benefits after six months drops](https://www.eveningexpress.co.uk/fp/news/local/number-of-north-east-universal-credit-claimants-still-receiving-benefits-after-six-months-drops/) *2 March 2021*
+* Bournemouth Daily Echo: [Universal Credit claims soared in BH postcodes as pandemic hit](https://www.bournemouthecho.co.uk/news/19127632.universal-credit-claims-soared-bh-postcodes-pandemic-hit/) *2 March 2021*
+* Wigan Today: [Thousands of Wiganers needing benefits in lockdown still claiming six months later](https://www.wigantoday.net/news/politics/thousands-of-wiganers-needing-benefits-in-lockdown-still-claiming-six-months-later-3152153) *3 March 2021*
+* East Anglian Daily Times: [New benefit claims in Ipswich shot up over 500% during pandemic](https://www.eadt.co.uk/news/ipswich-universal-credit-claims-rise-over-500-percent-7801020) *3 March 2021*
 
 The story featured on BBC front, home and England pages. It was also used by BBC Somerset, BBC Radio Shropshire and BBC Radio Tees.
 
