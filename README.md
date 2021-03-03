@@ -19,6 +19,19 @@ It was sourced from the DWP’s [Stat Explorer](https://stat-xplore.dwp.gov.uk/w
 * Starts on Universal Credit 
 * People on Universal Credit
 
+In order to establish the minimum numbers of people still on Universal Credit 6 months after their claims began we analysed increases in the numbers of claimants in the 6-12 month category between September and October (6 months after April and May).
+
+Any increases in those categories could only be due to claimants moving into the 6-12 month category from the 3-6 month category, i.e. those hitting 6 months in that month. (We would have excluded any areas where there was a fall, but this did not apply to any areas).
+
+We also factored in extra increases needed to compensate for claimants moving *out* of the 6-12 month category, into the 1-2 years category. Where the 1-2 year category *also* increased that month, we added that number to the calculation of those hitting 6 months (where there was no increase, or a fall, in the 1-2 years category, no additional increase was made).
+
+For example: in Torquay there were 4176 claimants in September in the 6-12 months category (those who had had claims open for that length of time). In October that category swelled to 8745. This means that at least 4569 claimants joined the category that month, as they hit the 6 month point and moved up from the previous category (3-6 months), even before factoring in how many more claimants would be needed to compensate for any moving *out* of that category.
+
+On that matter, the 1-2 year category increased by 100 claimants that month, who must have moved *out* of the 6-12 months category. That means that the numbers moving *in* to the 6-12 months category creating an increase overall, are 100 higher - 4669.
+
+Of course this is only a **minimum** number moving up into that category, as there are likely to be further claimants moving out of the 6-12 month category due to closing their claim (because, for example, they found work or their wages increased above the threshold for claiming Universal Credit).
+
+
 
 ## Data and sources
 
