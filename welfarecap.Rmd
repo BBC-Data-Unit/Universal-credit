@@ -1,0 +1,514 @@
+---
+title: "Welfare cap"
+output: html_notebook
+---
+
+# Finding out which areas are likely to be most affected by the welfare cap
+
+In January the benefit cap (which is applied to those who have been claiming Universal Credit for 9 months) will hit those who first began claiming Universal Credit (UC) at the start of the first lockdown.
+
+We want to find out:
+
+* Which areas have the largest proportion of people likely to be affected by that cap
+* Which areas have 'struggled most to recover', in terms of having the highest proportion of claimants not to have come off UC since April (and conversely those which have recovered best)
+* Which areas have been 'hardest hit', in terms of having the highest proportion of their population and/or claimants claiming UC since April
+* What is the average amount of benefit cap in each area (and therefore what might be expected)
+
+Additionally, we might also look at the local housing allowance (LHA) rates and:
+
+* How changes in housing prices have already affected claimants whose benefits were [based on "the 30th percentile of local rents from April 2020."](https://www.gov.uk/government/publications/local-housing-allowance-lha-rates-applicable-from-april-2020-to-march-2021)
+
+A methodological note on comparing UC claimants before and after April:
+
+> "A temporary £1,040 a year increase to the standard allowance for 1 year from April 2020 was introduced as part of a support package to support people through the coronavirus pandemic.
+> "Additionally, local housing allowance rates were increased to the 30th percentile of local rents from April 2020.
+> "These changes had the effect of bringing more people with higher earnings on to Universal Credit. This is because the more Universal Credit entitlement a household has, the more earnings the household can have before their award reduces to zero by the taper rate. Consequently, there are more people in employment who are eligible for Universal Credit than without the temporary increase. The background information and methodology document has more information on the calculation of a Universal Credit award.
+
+## Which areas have the largest proportion of people likely to be affected by that cap
+
+How many people began claiming UC in April 2020 and are now hitting six months? (Which would mean hitting 9 months in Jan)
+
+This data is in StatXplore in the Universal Credit folder, the People on Universal Credit database, Table 4: Local Authority by Employment Status.
+
+Exploring this data in Excel you can see the 'hump' of new claimants moving from the 0-3 months count to 3-6 months and then, in October, 6-12 months.
+
+We've downloaded data for October 2020 by local authority (rows) and duration (columns). This can be exported as CSV or XLSX - the CSV has annotation columns but these are all empty so we import the XLSX version as it needs less cleaning:
+
+```{r import data on duration Oct 20}
+ucbydurationLAoct20 <- read.csv("ucbydurationLAoct20.csv", stringsAsFactors = F, skip = 10)
+#import the XLSX instead
+ucbydurationLAoct20 <- rio::import("ucbydurationLAoct20.xlsx", skip = 10)
+```
+
+
+Note that the data isn't all imported as numbers:
+
+```{r summary}
+summary(ucbydurationLAoct20)
+```
+So we need to specify data type:
+
+```{r import oct data specifying data types}
+ucbydurationLAoct20 <- rio::import("ucbydurationLAoct20.xlsx", skip = 10, col_types = c("guess", "guess", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric"))
+summary(ucbydurationLAoct20)
+```
+
+Let's clean the colnames
+
+```{r clean colnames}
+colnames(ucbydurationLAoct20)
+colnames(ucbydurationLAoct20)[2] <- "LA"
+colnames(ucbydurationLAoct20)
+```
+
+
+Some annotations to note and store:
+
+```{r store annotations}
+ucbydurationLAoct20$LA[379:382]
+annotations.ucbydur <- paste(ucbydurationLAoct20$LA[379:382])
+```
+
+Now we fetch the September data:
+
+```{r import sep data and clean}
+ucbydurationLAsep20 <- rio::import("ucbydurationLAsep20.xlsx", skip = 10, col_types = c("guess", "guess", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric"))
+colnames(ucbydurationLAsep20)[2] <- "LA"
+```
+
+And check the annotations:
+
+```{r store sep annotations}
+ucbydurationLAsep20$LA[380:383]
+annotations.ucbydurSEP <- paste(ucbydurationLAoct20$LA[380:3823])
+```
+
+Comparing the annotations and the data, the 'p' for provisional appears in the date heading 'October' so those figures are provisional. The 'r' for revised appears in the date heading 'September' so those are revised.
+
+
+Let's clean these up a bit:
+
+```{r remove empty rows/cols}
+#remove first row
+ucbydurationLAsep20 <- ucbydurationLAsep20[-1,]
+ucbydurationLAoct20 <- ucbydurationLAoct20[-1,]
+#remove first col
+ucbydurationLAsep20 <- ucbydurationLAsep20[,-1]
+ucbydurationLAoct20 <- ucbydurationLAoct20[,-1]
+#remove last rows
+ucbydurationLAsep20 <- ucbydurationLAsep20[-c(374:383),]
+ucbydurationLAoct20 <- ucbydurationLAoct20[-c(373:383),]
+```
+
+And reshape:
+
+```{r reshape wide to long}
+#We need the tidyr library to use gather
+library(tidyr)
+#gather all the category columns into a single one
+UCbyLAsep20 <- tidyr::gather(ucbydurationLAsep20, category, claimants, colnames(ucbydurationLAsep20)[2:10])
+#Check it's worked
+table(UCbyLAsep20$category)
+```
+
+Now repeat for Oct:
+
+```{r reshape oct}
+#gather all the category columns into a single one
+UCbyLAoct20 <- tidyr::gather(ucbydurationLAoct20, category, claimants, colnames(ucbydurationLAoct20)[2:10])
+#Check it's worked
+table(UCbyLAoct20$category)
+```
+
+Create a data frame in case we need it.
+
+```{r categories df}
+categories <- as.data.frame(table(UCbyLAoct20$category))
+```
+
+
+We want to merge them to calculate change. To do that we need to combine the two fields that so they are unique:
+
+```{r merge datasets}
+#Create a new column in each data frame that combines two others
+UCbyLAsep20$lacat <- paste(UCbyLAsep20$LA, UCbyLAsep20$category, sep=":")
+UCbyLAoct20$lacat <- paste(UCbyLAoct20$LA, UCbyLAoct20$category, sep=":")
+#We need distinctive column names for the counts
+colnames(UCbyLAsep20)[3] <- "claimantsSep20"
+colnames(UCbyLAoct20)[3] <- "claimantsOct20"
+#Now merge
+UCbyLAsepoct20 <- merge(UCbyLAsep20, UCbyLAoct20, by = "lacat")
+```
+
+And calculate change
+
+```{r calc change}
+#October figure minus September figure = change
+UCbyLAsepoct20$changeSepOct <- UCbyLAsepoct20$claimantsOct20 - UCbyLAsepoct20$claimantsSep20
+#change divided by Sep figure = % change
+UCbyLAsepoct20$changeSepOctPerc <- UCbyLAsepoct20$changeSepOct / UCbyLAsepoct20$claimantsSep20
+```
+
+Then export:
+
+```{r export}
+write.csv(UCbyLAsepoct20, "UCbyLAsepoct20.csv")
+```
+
+Some further analysis can now take place in Excel. There, we do the following:
+
+1. Create a lookup table showing the 'next level' for each level (e.g. for 3-6 months the next level is 6-12 months)
+2. Create a new column which uses VLOOKUP to fetch the next level for each row of data
+3. That column is used to create a VLOOKUP to fetch the change for the next level (e.g. for a row showing the numbers of 3-6 month claimants in one area, we now also know the change in the 6-12 month category above)
+3. An `IF` function is used to add that change in the next level to the change in the current level IF the change in the current level AND the change in the level above are both above 0 (IF not, then the original figure is left unchanged): `=IF(AND(I2>0,L2>0),I2+L2,I2)`
+
+The logic for this runs as follows:
+
+If an area has 1000 claimants in the 6-12 month category in September, and then 1200 in October, it has gained *at least* 200 people who have moved up from the 3-6 month category (there is no other way to get into the 6-12 month category).
+
+However, the real number is likely to be higher. For example, if 100 people left the 6-12 month category in October (because they found work, or because they entered the 13th month of claiming UC) then it would take 300 people moving up from the 3-6 month category to make the overall number rise by 200 (300 people entering, minus 100 people leaving).
+
+So IF the number of people in the 1-2 year category also rose in October, this tells us the lowest possible number of people who left the 6-12 month category, and therefore the starting point for any rise. E.g. if the 6-12 month category lost 100 people before rising by 200 overall we can add the 100 to the over 200 increase to get a better minimum figure of people entering that category from the 3-6 month category.
+
+This is still an underestimate, as we don't know how many people left that category because they found work/higher earnings/stoped claiming.
+
+Let's bring that analysis back into R:
+
+```{r re-import}
+UCbyLAsepoct20analysed <- rio::import("UCbyLAsepoct20ANALYSIS.xlsx", sheet = 1)
+```
+
+## How many people entered the system in April and May?
+
+Now we know how many (at least) passed the 6 month mark in October, let's track back to April and May to see how many entered the system then. Although the lockdown began in the third week of March the March figures [would not capture them](https://stat-xplore.dwp.gov.uk/webapi/metadata/UC_Starts/Starts%20on%20Universal%20Credit.html):
+
+> "The reporting month in relation to starts to Universal Credit relates to a period from the Friday following the second Thursday in the previous month to the second Thursday in the reporting month."
+
+We are using the 'Starts to UC' dataset inside the UC folder on StatXplore
+
+This data is only provided by postcode district or JobCentre Plus.
+
+```{r import uc starts}
+startsonUCbyPOaprmay1920 <- rio::import("startsonUCbyPOaprmay1920.xlsx", skip = 9, col_types = c("guess", "guess", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric"))
+head(startsonUCbyPOaprmay1920[-1,])
+#Remove first row
+startsonUCbyPOaprmay1920 <- startsonUCbyPOaprmay1920[-1,]
+#Remove first col
+startsonUCbyPOaprmay1920 <- startsonUCbyPOaprmay1920[,-1]
+#rename first col
+colnames(startsonUCbyPOaprmay1920)[1] <- "postcodedistrict"
+#remove total column
+startsonUCbyPOaprmay1920 <- startsonUCbyPOaprmay1920[,-7]
+```
+
+Let's add some calculations:
+
+```{r uc start calcs}
+#calculate year on year change
+startsonUCbyPOaprmay1920$yoychangeapr <- startsonUCbyPOaprmay1920$`April 2020` - startsonUCbyPOaprmay1920$`April 2019`
+#And as a %
+startsonUCbyPOaprmay1920$yoychangePercApr <- startsonUCbyPOaprmay1920$yoychangeapr / startsonUCbyPOaprmay1920$`April 2019`
+#calculate month on month change
+startsonUCbyPOaprmay1920$momchangeapr <- startsonUCbyPOaprmay1920$`April 2020` - startsonUCbyPOaprmay1920$`March 2020`
+#And as a %
+startsonUCbyPOaprmay1920$momchangePercApr <- startsonUCbyPOaprmay1920$momchangeapr / startsonUCbyPOaprmay1920$`March 2020`
+#calculate month on month change for May
+startsonUCbyPOaprmay1920$momchangemay <- startsonUCbyPOaprmay1920$`May 2020` - startsonUCbyPOaprmay1920$`April 2020`
+#And as a %
+startsonUCbyPOaprmay1920$momchangePercMay <- startsonUCbyPOaprmay1920$momchangemay / startsonUCbyPOaprmay1920$`April 2020`
+```
+
+And export
+
+```{r export uc starts}
+write.csv(startsonUCbyPOaprmay1920, "startsonUCbyPOaprmay1920calcs.csv")
+```
+
+## Matching up to the April 6 month point in October
+
+In order to match up we need to use the same geo unit: postcode districts. 
+
+This data is in StatXplore in the Universal Credit folder, the People on Universal Credit database, Table 6: Postcode Area
+
+This time we've exported from September to November in one file:
+
+```{r import oct data for postcode districts}
+ucbydurationPOsepNov20 <- rio::import("ucbydurationPOsepNov20.xlsx", skip = 6)
+head(ucbydurationPOsepNov20, 20)
+```
+
+Columns 3-11 cover September, 12 to 20 for October. 
+
+Let's import the data properly, specifying data type and skipping the first 10 rows:
+
+```{r import PO with data types}
+ucbydurationPOsepNov20 <- rio::import("ucbydurationPOsepNov20.xlsx", skip = 10, col_types = c("guess", "guess", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric"))
+summary(ucbydurationPOsepNov20)
+```
+
+Then clean the rows and cols:
+
+```{r clean PO colnames}
+colnames(ucbydurationPOsepNov20)
+colnames(ucbydurationPOsepNov20)[2] <- "postcodedistrict"
+colnames(ucbydurationPOsepNov20)
+```
+
+```{r remove empty rows/cols of PO}
+#remove first row
+ucbydurationPOsepNov20 <- ucbydurationPOsepNov20[-1,]
+#remove first col
+ucbydurationPOsepNov20 <- ucbydurationPOsepNov20[,-1]
+#remove last rows
+ucbydurationPOsepNov20 <- ucbydurationPOsepNov20[-c(123:135),]
+```
+
+Now to reshape - first for September:
+
+```{r reshape wide to long PO}
+#gather all the category columns into a single one
+UCbyPOsep20 <- tidyr::gather(ucbydurationPOsepNov20[,c(1:10)], category, claimants, colnames(ucbydurationPOsepNov20)[2:10])
+#Check it's worked
+table(UCbyPOsep20$category)
+```
+
+These headings need cleaning to get rid of the digits:
+
+```{r rename cols with gsub}
+colnames(ucbydurationPOsepNov20) <- gsub("...[0-9]+$","",colnames(ucbydurationPOsepNov20))
+```
+
+Then repeat the reshape:
+
+```{r reshape wide to long PO with clean colnames}
+#gather all the category columns into a single one
+UCbyPOsep20 <- tidyr::gather(ucbydurationPOsepNov20[,c(1:10)], category, claimants, colnames(ucbydurationPOsepNov20)[2:10])
+#Check it's worked
+table(UCbyPOsep20$category)
+```
+
+Then for Oct:
+
+```{r reshape wide to long PO oct}
+#this time we select the first col and the 12th-19th
+UCbyPOoct20 <- tidyr::gather(ucbydurationPOsepNov20[,c(1,12:19)], category, claimants, colnames(ucbydurationPOsepNov20)[12:19])
+#Check it's worked
+table(UCbyPOoct20$category)
+```
+
+And for Nov:
+
+```{r reshape wide to long PO nov}
+#this time we select the first col and the 12th-19th
+UCbyPOnov20 <- tidyr::gather(ucbydurationPOsepNov20[,c(1,20:28)], category, claimants, colnames(ucbydurationPOsepNov20)[20:28])
+#Check it's worked
+table(UCbyPOnov20$category)
+```
+
+We again want to merge them to calculate change. To do that we need to combine the two fields that so they are unique:
+
+```{r merge datasets PO}
+#Create a new column in each data frame that combines two others
+UCbyPOsep20$lacat <- paste(UCbyPOsep20$postcodedistrict, UCbyPOsep20$category, sep=":")
+UCbyPOoct20$lacat <- paste(UCbyPOoct20$postcodedistrict, UCbyPOoct20$category, sep=":")
+UCbyPOnov20$lacat <- paste(UCbyPOnov20$postcodedistrict, UCbyPOnov20$category, sep=":")
+#We need distinctive column names for the counts
+colnames(UCbyPOsep20)[3] <- "claimantsSep20"
+colnames(UCbyPOoct20)[3] <- "claimantsOct20"
+colnames(UCbyPOnov20)[3] <- "claimantsNov20"
+#Now merge sep and oct
+UCbyPOsepoct20 <- merge(UCbyPOsep20, UCbyPOoct20, by = "lacat")
+#Now merge oct and nov
+UCbyPOoctnov20 <- merge(UCbyPOoct20, UCbyPOnov20, by = "lacat")
+```
+
+Now add the calculations:
+
+```{r calc change PO}
+#October figure minus September figure = change
+UCbyPOsepoct20$changeSepOct <- UCbyPOsepoct20$claimantsOct20 - UCbyPOsepoct20$claimantsSep20
+#change divided by Sep figure = % change
+UCbyPOsepoct20$changeSepOctPerc <- UCbyPOsepoct20$changeSepOct / UCbyPOsepoct20$claimantsSep20
+
+#Nov figure minus Oct figure = change
+UCbyPOoctnov20$changeOctNov <- UCbyPOoctnov20$claimantsNov20 - UCbyPOoctnov20$claimantsOct20
+#change divided by Sep figure = % change
+UCbyPOoctnov20$changeOctNovPerc <- UCbyPOoctnov20$changeOctNov / UCbyPOoctnov20$claimantsOct20
+```
+
+```{r colnames}
+colnames(UCbyPOsepoct20)
+colnames(UCbyPOoctnov20)
+```
+
+Let's try to remove those duplicate columns:
+
+```{r remove duplicate cols}
+UCbyPOsepoct20 <- UCbyPOsepoct20[,c(-5,-6)]
+head(UCbyPOsepoct20)
+
+UCbyPOoctnov20 <- UCbyPOoctnov20[,c(-5,-6)]
+head(UCbyPOoctnov20)
+```
+
+And rename the columns
+
+```{r rename cols}
+colnames(UCbyPOsepoct20)[2] = "postcodedistrict"
+colnames(UCbyPOsepoct20)[3] = "category"
+colnames(UCbyPOsepoct20)
+
+colnames(UCbyPOoctnov20)[2] = "postcodedistrict"
+colnames(UCbyPOoctnov20)[3] = "category"
+colnames(UCbyPOoctnov20)
+```
+
+
+And export
+
+```{r export PO calcs}
+write.csv(UCbyPOsepoct20, "UCbyPOsepoct20.csv")
+write.csv(UCbyPOoctnov20, "UCbyPOoctnov20.csv")
+```
+
+## Repeat for 2019
+
+For some historical context, let's repeat the above process for the 2019 data:
+
+```{r import 2019 data for postcode districts}
+ucbydurationPOsepNov19 <- rio::import("ucbydurationPOsepOctNov19.xlsx", skip = 10, col_types = c("guess", "guess", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric"))
+summary(ucbydurationPOsepNov19)
+
+colnames(ucbydurationPOsepNov19)
+colnames(ucbydurationPOsepNov19)[2] <- "postcodedistrict"
+colnames(ucbydurationPOsepNov19)
+
+#remove first row
+ucbydurationPOsepNov19 <- ucbydurationPOsepNov19[-1,]
+#remove first col
+ucbydurationPOsepNov19 <- ucbydurationPOsepNov19[,-1]
+#remove last rows
+ucbydurationPOsepNov19 <- ucbydurationPOsepNov19[-c(123:135),]
+
+#gather all the category columns into a single one
+UCbyPOsep19 <- tidyr::gather(ucbydurationPOsepNov19[,c(1:10)], category, claimants, colnames(ucbydurationPOsepNov19)[2:10])
+#Check it's worked
+table(UCbyPOsep19$category)
+
+#clean up colnames
+colnames(ucbydurationPOsepNov19) <- gsub("...[0-9]+$","",colnames(ucbydurationPOsepNov19))
+
+#Then repeat the reshape:
+#gather all the category columns into a single one
+UCbyPOsep19 <- tidyr::gather(ucbydurationPOsepNov19[,c(1:10)], category, claimants, colnames(ucbydurationPOsepNov19)[2:10])
+#Check it's worked
+table(UCbyPOsep19$category)
+
+##Then for Oct:
+#this time we select the first col and the 12th-19th
+UCbyPOoct19 <- tidyr::gather(ucbydurationPOsepNov19[,c(1,12:19)], category, claimants, colnames(ucbydurationPOsepNov19)[12:19])
+#Check it's worked
+table(UCbyPOoct19$category)
+
+#And for Nov:
+#this time we select the first col and the 12th-19th
+UCbyPOnov19 <- tidyr::gather(ucbydurationPOsepNov19[,c(1,20:28)], category, claimants, colnames(ucbydurationPOsepNov19)[20:28])
+#Check it's worked
+table(UCbyPOnov19$category)
+```
+
+
+We again want to merge them to calculate change. To do that we need to combine the fields that so they are unique:
+
+```{r merge datasets 2019 PO}
+#Create a new column in each data frame that combines two others
+UCbyPOsep19$lacat <- paste(UCbyPOsep19$postcodedistrict, UCbyPOsep19$category, sep=":")
+UCbyPOoct19$lacat <- paste(UCbyPOoct19$postcodedistrict, UCbyPOoct19$category, sep=":")
+UCbyPOnov19$lacat <- paste(UCbyPOnov19$postcodedistrict, UCbyPOnov19$category, sep=":")
+#We need distinctive column names for the counts
+colnames(UCbyPOsep19)[3] <- "claimantsSep19"
+colnames(UCbyPOoct19)[3] <- "claimantsOct19"
+colnames(UCbyPOnov19)[3] <- "claimantsNov19"
+#Now merge sep and oct
+UCbyPOsepoct19 <- merge(UCbyPOsep19, UCbyPOoct19, by = "lacat")
+#Now merge oct and nov
+UCbyPOoctnov19 <- merge(UCbyPOoct19, UCbyPOnov19, by = "lacat")
+```
+
+Now add the calculations:
+
+```{r calc change PO 2019}
+#October figure minus September figure = change
+UCbyPOsepoct19$changeSepOct <- UCbyPOsepoct19$claimantsOct19 - UCbyPOsepoct19$claimantsSep19
+#change divided by Sep figure = % change
+UCbyPOsepoct19$changeSepOctPerc <- UCbyPOsepoct19$changeSepOct / UCbyPOsepoct19$claimantsSep19
+
+#Nov figure minus Oct figure = change
+UCbyPOoctnov19$changeOctNov <- UCbyPOoctnov19$claimantsNov19 - UCbyPOoctnov19$claimantsOct19
+#change divided by Sep figure = % change
+UCbyPOoctnov19$changeOctNovPerc <- UCbyPOoctnov19$changeOctNov / UCbyPOoctnov19$claimantsOct19
+```
+
+Let's try to remove those duplicate columns:
+
+```{r colnames clean 2019}
+colnames(UCbyPOsepoct19)
+colnames(UCbyPOoctnov19)
+
+UCbyPOsepoct19 <- UCbyPOsepoct19[,c(-5,-6)]
+head(UCbyPOsepoct19)
+
+UCbyPOoctnov19 <- UCbyPOoctnov19[,c(-5,-6)]
+head(UCbyPOoctnov19)
+
+colnames(UCbyPOsepoct19)[2] = "postcodedistrict"
+colnames(UCbyPOsepoct19)[3] = "category"
+colnames(UCbyPOsepoct19)
+
+colnames(UCbyPOoctnov19)[2] = "postcodedistrict"
+colnames(UCbyPOoctnov19)[3] = "category"
+colnames(UCbyPOoctnov19)
+```
+
+And export
+
+```{r export PO calcs 2019}
+write.csv(UCbyPOsepoct19, "UCbyPOsepoct19.csv")
+write.csv(UCbyPOoctnov19, "UCbyPOoctnov19.csv")
+```
+
+## In-work poverty analysis
+
+We want to see how much in-work poverty has changed in different areas. At a national level for the last year around 35% of those claiming UC have been in employment - but in the last few months this has steadily increased to around 39% in October.
+
+We've exported the data from StatXplore (UC > People on UC > Postcode area then used Employment indicator as another row evel and expanded the months to cover Jan 19 onwards), and cleaned it a little so that the categories are repeated in the second column:
+
+```{r import iwp data}
+inworkPovertybyLA_jan19dec20 <- rio::import("inworkPovertybyLA_jan19dec20.xlsx", sheet = 2, skip = 9, col_types = c("guess", "guess", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric"))
+```
+
+We want to calculate the percentages of the totals for each LA.
+
+
+## Amount of benefit cap - TBC
+
+This data is in the Benefit Cap section, in the UC Cumulative Caseload database. The [explanatory note](https://stat-xplore.dwp.gov.uk/webapi/metadata/BC_UC_Flows/Capped%20UC%20Households%20to%20Date.html) says:
+
+> "'Onflow Month' shows the first month in which a household had their Universal Credit capped. Households may flow on and off the cap numerous times as their circumstances change, but 'Onflow Month' will always show the month when a household had their Universal Credit capped for the first time."
+
+We are just interested in how much is being capped, and where. Forming a table is tricky but goes like this:
+
+* Clear the table
+* Select Measures > Amount of benefit capped (mean). Click Row to add that as a row.
+* Select Geography > National - Regional - LA - OAs > Local authority. Click Row to add that as another level of row.
+* Select Onflow month > Jan 2020 through to latest month. Click Column to add those as columns
+* Click Retrieve data in the main table to load the figures for the mean caps
+
+## Use the API - TBC
+
+You can download the data as an API query - details below and at https://stat-xplore.dwp.gov.uk/webapi/online-help/Open-Data-API.html
+
+```{r}
+empdata <- jsonlite::fromJSON("employmentbyLAjan19_oct20.json")
+empdata$database
+```
