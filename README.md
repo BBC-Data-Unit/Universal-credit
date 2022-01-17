@@ -15,7 +15,7 @@ The government said it was boosting welfare support by "billions" to help.
 
 The BBC Shared Data Unit analysed official statistics detailing the number of people who were on Universal Credit up to 12 November.
 
-It was sourced from the DWP’s [Stat Explorer](https://stat-xplore.dwp.gov.uk/webapi/jsf/login.xhtml) datasets:
+It was sourced from the DWP’s [Stat-Xplore](https://stat-xplore.dwp.gov.uk/webapi/jsf/login.xhtml) datasets:
 * Starts on Universal Credit 
 * People on Universal Credit
 
